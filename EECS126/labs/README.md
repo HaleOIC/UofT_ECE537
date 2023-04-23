@@ -1,4 +1,6 @@
-# Installation
+# REMDME
+
+## Installation
 
 Our labs use Jupyter. The recommended way to install it is by installing
 Anaconda, an all-in-one distribution that comes with Python, Jupyter, and many
@@ -21,3 +23,6 @@ all of the necessary dependencies. You can install it by running:
 conda env create --name ee126_lab0 --file ee126_lab0.yml
 ```
 
+## Labs outline 
+
+- [x] `lab0`: a tutotial for Jupyter and basic using for `numpy`, an implementation of `Binomial` simulation and the value of `Pi` simulation.  

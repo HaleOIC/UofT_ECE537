@@ -6,7 +6,7 @@ other useful packages.
 
 Download the installers at https://www.anaconda.com/distribution/, and follow
 the instructions at https://docs.anaconda.com/anaconda/install/ to set it up.
-Choose the latest version of Python.
+Choose the latest version of Python 3.
 
 One thing to note is that we want Anaconda to reside in our home directory.
 However, this means that we may needs to add its bin folder to our PATH
