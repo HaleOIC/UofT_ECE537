@@ -25,4 +25,4 @@ conda env create --name ee126_lab0 --file ee126_lab0.yml
 
 ## Labs outline 
 
-- [x] `lab0`: a tutotial for Jupyter and basic using for `numpy`, an implementation of `Binomial` simulation and the value of `Pi` simulation.  
+- [x] `lab0`: a tutotial for Jupyter and basic using for `numpy`, an implementation of `Binomial` simulation and the value of `Pi` approximation.  
