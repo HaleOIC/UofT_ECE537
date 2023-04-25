@@ -6,12 +6,12 @@ It has contained five labs`1-5`, while `Julia` is a new language for me, so I ad
 
 The framework of the labs are:
 
-- `lab0`: basic introduction to `Julia` and `Pluto`
-- `lab1`: `Univariate Random varables` and `Independence of Discrete random variables`
-- `lab2`: `Bivariate Gaussian Distributions` and `empirical verificaiton of the Law of Large Numbers and Central limit Theorem`
-- `lab3`: `Random Walk Process`  and `Poisson Random process`
-- `lab4`: `Generate Low-pass random process` and `Power Spectral density`
-- `lab5`: `autoregressive filter` and `coefficient estimation`
+- [x] `lab0`: basic introduction to `Julia` and `Pluto`
+- [ ] `lab1`: `Univariate Random varables` and `Independence of Discrete random variables`
+- [ ] `lab2`: `Bivariate Gaussian Distributions` and `empirical verificaiton of the Law of Large Numbers and Central limit Theorem`
+- [ ] `lab3`: `Random Walk Process`  and `Poisson Random process`
+- [ ] `lab4`: `Generate Low-pass random process` and `Power Spectral density`
+- [ ] `lab5`: `autoregressive filter` and `coefficient estimation`
 
 when using the `Pluto` as notebook, I find it is really interestring and interactive, you can learn a lot when you install `Pluto` and check the `Getting started`.
 
