@@ -4,51 +4,512 @@
 using Markdown
 using InteractiveUtils
 
+# This Pluto notebook uses @bind for interactivity. When running this notebook outside of Pluto, the following 'mock version' of @bind gives bound variables a default value (instead of an error).
+macro bind(def, element)
+    quote
+        local iv = try Base.loaded_modules[Base.PkgId(Base.UUID("6e696c72-6542-2067-7265-42206c756150"), "AbstractPlutoDingetjes")].Bonds.initial_value catch; b -> missing; end
+        local el = $(esc(element))
+        global $(esc(def)) = Core.applicable(Base.get, el) ? Base.get(el) : iv(el)
+        el
+    end
+end
+
 # ╔═╡ 8b31063c-2246-11ec-03b9-61538108208f
-using Distributions, Plots, Statistics
+using Distributions, Plots, Statistics, PlutoUI, DataFrames
+
+# ╔═╡ 60a7b9b1-4419-414a-bc24-7281ff9188ce
+PlutoUI.TableOfContents()
 
 # ╔═╡ 9607249e-6e65-4c4b-8d3f-00a1767eeb81
 md"
 
-# Lab 1 Report
+# Lab 1 
 
-In this lab, we are supposed to create distributions, sample, and test for independence of RVs.
+In this lab, we are supposed to create distributions, sample, and test for independence of RVs. Specifically, we will talk about continuous and discrete variables.
 
-First of all, we need to import the related lib to our report.
+First of all, we need to import the related lib to our report.Throughout this lab, the **`Distributions.jl`** package in Julia has been utilized to be able to use the probabllity constructs in code.
+
+The supportive distribution in the Package `Distributions`
+1. continuous Univariate distribution
+- Arcsine(a,b)
+- Cosine(μ, σ)
+- Epanechnikov(μ, σ)
+- Erlang(α,θ)
+- **Exponential(θ)**
+- Gamma(α,θ)
+- Kolmogorov()
+- Laplace(μ,θ)
+- Logistic(μ,θ)
+- LogNormal(μ,σ)
+- **Normal(μ,σ)**
+- TriangularDist(a,b,c)
+- **Uniform(a,b)**
+
+2. discrete Univariate distribution 
+- **Bernoulli(p)**
+- **Binomial(n,p)**
+- **DiscreteUniform(a,b)**
+- **Geometric(p)**
+- Hypergeometric(s, f, n)
+- NegativeBinomial(r,p)
+- **Poisson(λ)**
+- PoissonBinomial(p)
+
+3. multivariate distribution
+- Multinomial
+- MvNormal
+- MvNormalCanon
+- MvLogNormal
+- Dirichlet
+"
+
+# ╔═╡ 5b95cf0b-8fdf-433b-827f-ff2400757638
+md"
+Before we solve the specific problem, we need to talk about two simulations 
+1. univariate random variable 
+2. discrete random variable
+Both of them are fundemental topics we wanna explore, and other things are based on them, and many type of sampling for distribution is from the uniform distribution. 
+"
+
+# ╔═╡ 5f7b5c8a-c709-4554-91f9-179ede6a6981
+plotly()
+
+# ╔═╡ eee9dfa8-53b7-4a4f-ad41-8454746e186c
+md"
+## 1. Simulate Univariate Random Variables
+
+Univariate random variable is very common in daily life, In statistics, a univariate distribution is a probability distribution of only one random variable. This is in contrast to a multivariate distribution, the probability distribution of a random vector (consisting of multiple random variables)`(from the wiki)`.
+
+Okay, let us look at a typical example `Uniform distribution`, here is its `PDF`:
+
+$f_X(x) = \left\{|
+	\begin{matrix} 
+		\frac{1}{b - a} & a\le x \le b  \\
+		0 & x \lt a \, or \, x \gt b
+	\end{matrix}
+	\right.$
+
+After the calculation, we can have its `CDF`:
+
+$F_X(x) = \left\{
+	\begin{matrix}
+		0 & x \lt a \\
+		\frac{x - a}{b - a} & a \lt x \lt b \\	
+		1 & b \lt x 
+	\end{matrix}
+	\right.$
+that is very easy to understand, and we can calculate its mean is $E(x) = \frac{1}{2}(a + b)$ and its variace is $\frac{1}{12}(b - a)^2$
+### 1.1 Numerical Simulation
+
+In order to simulate the distribution, we need use the `Distribution` package to do what we want.
+First of all, please judge the N you want to sample for simulation:
+
+𝑁 = $(@bind N1 Slider(50:50:10000; show_value=true, default=3000))
+
+and we assume the value of a and b is $a = 2$ and $b = 5$(you can change it value any time you want to change,but make sure $b \gt a$ in case the pdf is nagetive when calculating.
+
 
 "
 
-# ╔═╡ 8fefd34b-9d41-40d5-8ff1-2357eddef898
+# ╔═╡ 1ec70f36-c5c4-4212-8682-e285e78f80ef
+# generate the sample space for plots
+begin
+	a = 2.0
+	b = 5.0
+	rand_vals = rand(N1) .* (b - a) .+ a
+	histogram(rand_vals, normalize=true, bins=:auto, xlabel="Value", ylabel="frequency", title="Uniform distribution")
+end
+
+# ╔═╡ 48669202-0a14-422f-99a1-ecce34a3879f
 md"
-
-## Question 1 
-
-Let $Z$ be a random variable with the following CDF.
-
-$$
-	P(Z \lt z)
-$$
+we can simulate the average value of the distribution and variance of them by the following mathod.
 "
 
-# ╔═╡ 3a18cc87-1508-483e-9c2d-fa579e7edab4
+# ╔═╡ 09fb1ee3-3b36-40b0-a9d9-b2964fbf0859
+begin
+	tot_value = 0.0
+	for k = 1:N1
+		global tot_value += rand_vals[k]
+	end
+	average_val = tot_value / N1
+	println("the average value of the Uniform(a,b) is ", average_val)
+	println("E(x) is ", 0.5 * (a + b))
+	err = (rand_vals .- average_val) .^ 2
+	tot_err = 0.0
+	for k = 1:N1
+		global tot_err += err[k]
+	end
+	ave_err = tot_err / N1 
+	println("the variance of the Uniform(a,b) is ", ave_err)
+	println("E(x) is ",  (b - a)^2 / 12)
+end
+
+# ╔═╡ ec09f9b2-ead7-48ae-bae7-fa064890360a
 md"
+### 1.2 Result description
+from above analysis, we grasp a basic continous distribution `uniform distribution`, it is a very important random variable, we can generate other useful random varible by just shift or scaleing.like 
+$U(a,b) = U(0,1) * \frac{1}{b - a} + a$
+and the sampling process has an apparently explaination of the $E(x)$ and $\sigma(x)$
+"
 
-## Code
+# ╔═╡ e6aeeab1-3728-455b-925e-0e44d38ca6a6
+md"
+## 2. simulate Discrete random variables
+except for the continuous random variables, the discrete space is also interesting. At the next part, we will consider a typical scenerio, toss a coin. we assume the probability for the head is $p$ and the tail is $1-p$. (Assume the coin is with uneven mass distribution), we can easily find the distribution is 
 
-the code is written individually.
+$P(X = 0) = 1-p \text{ and } P(X = 1) = p$
 
+then we wanna simulate this scene, and wander the expectation and variance of the random varible.
+the statistics properties of the random variable are
+
+$E(X) = p \text{  and  } var(X) = p(1 - p)$
+
+### 2.1 Numerical simulation
+First of all, please judge the $N$ and probability $p$ you want to sample for simulation:
+
+𝑁 = $(@bind N2 Slider(50:50:10000; show_value=true, default=3000))
+
+p = $(@bind p Slider(0:0.02:1; show_value=true, default=0.5))
+
+"
+
+# ╔═╡ 07b5d3a7-4d5d-4e8e-9dac-98448b62ff18
+#generate the distribution we wanna talk about
+begin
+	f(x) = (x > p) ? 0 : 1
+	values = map(f, rand(N2))
+	histogram(values, normalize=true, bins=10, xlabel="Value", ylabel="frequency", title="binomial distribution")
+end
+
+# ╔═╡ 93163bf6-6ffb-40c9-a9f9-926a817a4a21
+md"
+we can simulate the average value of the distribution and variance of them by the following mathod.
+"
+
+# ╔═╡ 91a1078c-d109-4b46-a54f-3d53c1ce1aae
+begin
+	mean_value = mean(values)
+	println("the mean value of the random variables: ", mean_value)
+	println("the mean threotical is ", p)
+	var_value = var(values)
+	println("the variance value of the random variables: ", var_value)
+	println("the variance threotical is ", p * (1 - p))
+end
+
+# ╔═╡ 8553d086-96b0-4470-8fef-c24c228c99fd
+md"
+### 2.2 Result description
+
+From the above analysis,we grasp the basic discrete random variable `Binomial distribution`, which is a fundemental distribution, and in the next lab we will push forward its outcome to more cases.
+"
+
+# ╔═╡ f63446f2-eb14-4e0d-8548-b52539ac2977
+md"
+## 3. Specific problems
+### 3.1 Question 1 
+
+Let $z$ be a random variable with the following CDF.
+
+$P(Z \le z) = \left\{
+    \begin{matrix}
+		0 & z < 0 \\
+		0.5z & 0 \le z \lt 1 \\
+		0.25 + 0.25z & 1 \le z \lt 3 \\
+        1 & 3 \le z
+    \end{matrix}
+    \right.$
+(a) Generate $N = 100$ independent samples of $Z$ and plot the histogram 
+"
+
+# ╔═╡ 793c418d-f15e-4b45-af92-22aab447ae55
+md"
+we can sample a bulk of points by using the $CDF^{-1}(z)$, and simulate the distribution. we can easily find the $F_Z^{-1}(z)$ as follows:
+
+$F_Z^{-1}(z) = \left\{
+		\begin{matrix}
+			0 & z \lt 0 \\
+			2z & 0 \le z \lt 0.5 \\
+			4z - 1 & 0.5 \le z \lt 1 \\
+			0 & z > 1
+		\end{matrix}
+	\right.$
+
+all we need to do is just generate a uniform distribution and make inverse of it to the RV space.and from the CDF, we can easily have the PDF by using the formula $f_X(x) = \frac{F_X(x)}{dx}$, so the PDF of the random variable Z is as follows:
+
+
+
+$f_Z(z) = \left\{
+		\begin{matrix}
+			0 & z \lt 0 \\
+			0.5 & 0 \le z \lt 1 \\
+			0.25 & 1 \le z \lt 3 \\
+			0 & 3 \le z
+		\end{matrix}
+	\right.$
+
+we can have a look at it in the simulation graph.
+"
+
+# ╔═╡ 9a9fef63-8ba1-4875-9faa-73358c10a68d
+begin
+	N_1 = 100
+	U_1 = rand(N_1)
+	F_inv(x) = (x < 0.5) ? 2 * x : 4 * x - 1 
+	Z_1 = map(F_inv, U_1)
+	histogram(Z_1, normalize=true, bins=3, xlabel="z", ylabel="f_Z(z)", title="Uniform distribution")
+end
+
+# ╔═╡ 79e7a3af-4ed2-4f9b-a451-3ccecf13702b
+md"
+(b) Find the average of the samples and compare it to the expected value
+
+we can gain the expected value is 
+$E(Z) = \int_{0}^{3}f_Z(z)z dz = \int_{0}^{1} 0.5z dz + \int_{1}^{3} 0.25zdz = 1.25$
+"
+
+# ╔═╡ 4cb1b67c-3efa-4d25-8e4c-2726b0bd7d51
+begin
+	ave_1 = mean(Z_1)
+	println("the average value of the samples is ", ave_1)
+	expc_1 = 1.25
+	println("the expected value of the samples is ", expc_1)
+end
+
+# ╔═╡ f67be6fd-67b5-4fe0-bb42-535437483924
+md"
+(c) Find the empirical variance and compare it to the true variance 
+
+we can gain the true variance is $Var(z) = \int_{0}^{3}f_Z(z)(z - E(z))^2dz = \frac{37}{48} = 0.770833$
+"
+
+# ╔═╡ 28386cde-f0e6-4c75-a11f-64ac360a1fcc
+begin
+	var_1 = var(Z_1)
+	println("the empirical variance of the samples is ", var_1)
+	tvar_1 = 0.7708333
+	println("the true variance of the samples is ", tvar_1)
+end
+
+# ╔═╡ ee0ffd84-0605-48d7-a0e7-abc9b1036466
+md"
+(d) For $N = 100， 200， 300， 400， 500， 1000， 2000， 5000$ samples of $Z$ find the average and variance and plot them as a function of N. Do they converge as N increases?
+
+we can calculate each case for different $N$ and plot them a figure.
+"
+
+# ╔═╡ ff35f1bd-2bdf-4fe6-8837-81f70c5e6aeb
+begin
+	Ns_1 = [100, 200, 300, 400, 500, 1000, 2000, 5000]
+	aves1_Z = []
+	vars1_Z = []
+	for each in Ns_1
+		U_each = rand(each)
+		Z_each = map(F_inv, U_each)
+		ave_each = mean(Z_each)
+		var_each = var(Z_each)
+		push!(aves1_Z, ave_each)
+		push!(vars1_Z, var_each)
+	end
+end
+
+# ╔═╡ 75d78093-cfac-47e1-ab82-1fd492aa10cb
+plot(Ns_1, aves1_Z, xlabel="N", ylabel="mean(N)", color="blue", label="mean(N)")
+
+# ╔═╡ a0bb3dc0-293c-4e0e-9f93-88cf82413e69
+plot(Ns_1, vars1_Z, xlabel="N", ylabel="var(N)", color="purple", label="var(N)")
+
+# ╔═╡ e79566b3-4bd9-4dfd-8942-69483002b628
+md"
+we can easily find each plot converges as the N becomes larger.
+"
+
+# ╔═╡ 95c62152-5534-42dd-952b-0822feab0ba3
+md"
+### 3.2 Question 2
+Consider two biased dice each with the following PMF:
+
+$P(X = 1) = P(X = 2) = 0.25$
+
+and 
+
+$P(X = 3) = P(X = 4) = P(X = 5) = P(X = 6) = 0.125$
+
+(a) Generate $N = 100$ independent samples of the two dice tosses denoted by $(X, Y)$, and show the joint empirical PMF in a table
+
+Just like the discussions we talk about above. we can simulate the process in the same way.
+"
+
+# ╔═╡ 3bec43c5-a4e4-44ca-825e-aa6d0158a4f0
+#define the funciton we need
+function func(x) 
+	rv = 0
+	if 0< x < 0.25
+		rv = 1
+	elseif 0.25 < x < 0.5
+		rv = 2
+	elseif 0.5 < x < 0.625
+		rv = 3
+	elseif 0.625 < x < 0.75
+		rv = 4
+	elseif 0.75 < x < 0.875
+		rv = 5
+	elseif 0.875 < x < 1
+		rv = 6
+	end
+end
+
+# ╔═╡ ed22dcb7-582d-44dc-9e58-fd40dc1ab8ab
+# use the function to generate the neeeded distributions
+begin
+	N = 100
+	X_2 = map(func, rand(N)) 
+	Y_2 = map(func, rand(N))
+	sum_X_Y = zeros(6, 6)
+	for i in 1:N
+		sum_X_Y[X_2[i], Y_2[i]] += 1
+	end
+	sum_X_Y = sum_X_Y ./ N
+
+	DataFrame(sum_X_Y, ["1", "2", "3", "4", "5", "6"])
+end
+
+# ╔═╡ 49f32f5a-3369-4ef3-9f6d-650f028f8f9c
+md"
+(b) Using the simulated data, study whether the two random variables $X$ and $Y$ are independent
+"
+
+# ╔═╡ 5709429e-244e-4829-82a6-b315b8b0cece
+#calculate the margin probability of the X
+begin
+	sum_X_2 = zeros(6, 1)
+	for i in 1:6
+		for k in 1:6
+			sum_X_2[i] += sum_X_Y[i, k]
+		end
+	end
+	DataFrame(sum_X_2, ["pₓ(k)"])
+end
+
+# ╔═╡ 2c288f45-b6b9-4c10-ab89-93decf3873c7
+#calculate the margin probability of the Y
+begin
+	sum_Y_2 = zeros(6, 1)
+	for i in 1:6
+		for k in 1:6
+			sum_Y_2[i] += sum_X_Y[k, i]
+		end
+	end
+	
+	DataFrame(sum_Y_2, ["Pᵧ(k)"])
+end
+
+# ╔═╡ f16addfc-bee1-453c-b126-53c05e88ac64
+md"
+Now, to check for independence, we know will use the information that the joint pmf factors into respective marginal pmfs. We will subtract the two matrices, one with the empirical joint pmf $p_{X,Y}(x,y)$ and the other with the factored products of marginal pmfs $p_X(x)p_Y(y)$, to see absolute elementwise error. The factored product pmf was obtained by $\mathbf{p}_X(x)\mathbf{p}_Y(y)^\intercal$.
+"
+
+# ╔═╡ 2f6feba4-cf22-4b4c-b91a-7ddb079910e4
+#define calculate the product of P(x) P(y)
+
+begin
+	P_X_Y = sum_X_2 * transpose(sum_Y_2)
+	DataFrame(P_X_Y, ["1", "2", "3", "4", "5", "6"])
+end
+
+# ╔═╡ 1e9e53a2-b4e9-45e3-b1fc-5a786390b189
+# the abs error between PX(x)PY(y) and PX,Y(x, y)
+begin
+	err_P_XY = abs.(sum_X_Y - P_X_Y)
+	DataFrame(err_P_XY, ["1", "2", "3", "4", "5", "6"])
+end
+
+# ╔═╡ 9419695c-7205-4544-a3bc-b8b0b1b6fae9
+md"
+We can observe that the errors are quite small and despite a small sample size, 
+ $X$ and $Y$ do look indpendent. This will again be verified alternatively using conditional probablility later on.
+"
+
+# ╔═╡ 5a5808e8-3c38-4134-ae6f-b99e941a697a
+md"
+(c) Define 
+
+$Z_1 = X + Y$ 
+
+$Z_2 = X - Y$
+
+Using the simulated data, study whether $Z_1$ and $Z_2$ are independent?
+
+we need to combine the $X$ and $Y$ into $Z_1$ and $Z_2$ and then calculate the relative coefficient. 
+"
+
+# ╔═╡ b9adf600-2c87-4f2d-a5e6-a6d2ffb73917
+begin
+	Z_2_1 = X_2 .+ Y_2
+	Z_2_2 = X_2 .- Y_2
+
+	sum_Z_Z = zeros(12, 11)
+	for i in 1:N
+		sum_Z_Z[Z_2_1[i], Z_2_2[i] + 6] += 1
+	end
+	sum_Z_Z = sum_Z_Z ./ N
+	DataFrame(sum_Z_Z, ["-5", "-4", "-3", "-2", "-1", "0", "1", "2", "3", "4", "5"])
+end
+
+# ╔═╡ 2330e6ea-cecd-4db7-a228-559e7eaa51ef
+begin
+	P_Z1 = zeros(12, 1)
+	for i in 1:12
+		for k in 1:11
+			P_Z1[i] += sum_Z_Z[i, k]
+		end
+	end
+	DataFrame(P_Z1, ["P_z1(k)"])
+end
+
+# ╔═╡ dcd5e737-fff4-4a54-a76d-12bd156476ef
+begin
+	P_Z2 = zeros(11, 1)
+	for i in 1:11
+		for k in 1:12
+			P_Z2[i] += sum_Z_Z[k, i]
+		end
+	end
+	DataFrame(P_Z2, ["P_z2(k + 6)"])
+end
+
+# ╔═╡ a778b136-82f6-40d0-b605-c43806129a48
+#define the abs error between the P(Z1)P(Z2) and PZ1Z2(z,s)
+begin
+	P_Z1_Z2 = P_Z1 * transpose(P_Z2) 
+	err_P_ZZ = abs.(sum_Z_Z - P_Z1_Z2)
+	DataFrame(err_P_ZZ,  ["-5", "-4", "-3", "-2", "-1", "0", "1", "2", "3", "4", "5"])
+end
+
+# ╔═╡ 0e89e6f8-3f6f-4bd5-82fd-68e5cac39444
+md"
+From the above observation, we can have the view that the $Z_1$ and $Z_2$ is not dindependent from one another.
+"
+
+# ╔═╡ e196b449-5f3a-4d7c-929f-8acca3c26ae8
+md"
+## 4. Summary
+In this lab, we talk about the two basic distribution in the probability space, `Uniform distribution` and `Binomial distribution`, for the practice, we have solve two questions, and display the outcome elegantly.
 "
 
 # ╔═╡ 00000000-0000-0000-0000-000000000001
 PLUTO_PROJECT_TOML_CONTENTS = """
 [deps]
+DataFrames = "a93c6f00-e57d-5684-b7b6-d8193f3e46c0"
 Distributions = "31c24e10-a181-5473-b8eb-7969acd0382f"
 Plots = "91a5bcdd-55d7-5caf-9e0b-520d859cae80"
+PlutoUI = "7f904dfe-b85e-4ff6-b463-dae2292396a8"
 Statistics = "10745b16-79ce-11e8-11f9-7d13ad32a3b2"
 
 [compat]
+DataFrames = "~1.5.0"
 Distributions = "~0.25.87"
 Plots = "~1.38.10"
+PlutoUI = "~0.7.50"
 """
 
 # ╔═╡ 00000000-0000-0000-0000-000000000002
@@ -57,7 +518,13 @@ PLUTO_MANIFEST_TOML_CONTENTS = """
 
 julia_version = "1.8.5"
 manifest_format = "2.0"
-project_hash = "b5edc1f1d123fa96dbd5bafd241f033e38710abc"
+project_hash = "ef07955d98d984c33cf735a171ff5bf517712adf"
+
+[[deps.AbstractPlutoDingetjes]]
+deps = ["Pkg"]
+git-tree-sha1 = "8eaf9f1b4921132a4cff3f36a1d9ba923b14a481"
+uuid = "6e696c72-6542-2067-7265-42206c756150"
+version = "1.1.4"
 
 [[deps.ArgTools]]
 uuid = "0dad84c5-d112-42e6-8d28-ef12dabb789f"
@@ -150,16 +617,32 @@ git-tree-sha1 = "d05d9e7b7aedff4e5b51a029dced05cfb6125781"
 uuid = "d38c429a-6771-53c6-b99e-75d170b6e991"
 version = "0.6.2"
 
+[[deps.Crayons]]
+git-tree-sha1 = "249fe38abf76d48563e2f4556bebd215aa317e15"
+uuid = "a8cc5b0e-0ffa-5ad4-8c14-923d3ee1735f"
+version = "4.1.1"
+
 [[deps.DataAPI]]
 git-tree-sha1 = "e8119c1a33d267e16108be441a287a6981ba1630"
 uuid = "9a962f9c-6df0-11e9-0e5d-c546b8b5ee8a"
 version = "1.14.0"
+
+[[deps.DataFrames]]
+deps = ["Compat", "DataAPI", "Future", "InlineStrings", "InvertedIndices", "IteratorInterfaceExtensions", "LinearAlgebra", "Markdown", "Missings", "PooledArrays", "PrettyTables", "Printf", "REPL", "Random", "Reexport", "SentinelArrays", "SnoopPrecompile", "SortingAlgorithms", "Statistics", "TableTraits", "Tables", "Unicode"]
+git-tree-sha1 = "aa51303df86f8626a962fccb878430cdb0a97eee"
+uuid = "a93c6f00-e57d-5684-b7b6-d8193f3e46c0"
+version = "1.5.0"
 
 [[deps.DataStructures]]
 deps = ["Compat", "InteractiveUtils", "OrderedCollections"]
 git-tree-sha1 = "d1fff3a548102f48987a52a2e0d114fa97d730f0"
 uuid = "864edb3b-99cc-5e75-8d2d-829cb0a9cfe8"
 version = "0.18.13"
+
+[[deps.DataValueInterfaces]]
+git-tree-sha1 = "bfc1187b79289637fa0ef6d4436ebdfe6905cbd6"
+uuid = "e2d170a0-9d28-54be-80f0-106bbe20a464"
+version = "1.0.0"
 
 [[deps.Dates]]
 deps = ["Printf"]
@@ -255,6 +738,10 @@ git-tree-sha1 = "aa31987c2ba8704e23c6c8ba8a4f769d5d7e4f91"
 uuid = "559328eb-81f9-559d-9380-de523a88c83c"
 version = "1.0.10+0"
 
+[[deps.Future]]
+deps = ["Random"]
+uuid = "9fa8497b-333b-5362-9e8d-4d0656e87820"
+
 [[deps.GLFW_jll]]
 deps = ["Artifacts", "JLLWrappers", "Libdl", "Libglvnd_jll", "Pkg", "Xorg_libXcursor_jll", "Xorg_libXi_jll", "Xorg_libXinerama_jll", "Xorg_libXrandr_jll"]
 git-tree-sha1 = "d972031d28c8c8d9d7b41a536ad7bb0c2579caca"
@@ -263,15 +750,15 @@ version = "3.3.8+0"
 
 [[deps.GR]]
 deps = ["Artifacts", "Base64", "DelimitedFiles", "Downloads", "GR_jll", "HTTP", "JSON", "Libdl", "LinearAlgebra", "Pkg", "Preferences", "Printf", "Random", "Serialization", "Sockets", "TOML", "Tar", "Test", "UUIDs", "p7zip_jll"]
-git-tree-sha1 = "0635807d28a496bb60bc15f465da0107fb29649c"
+git-tree-sha1 = "db730189e3d250d97515a91886de7e33aa8833e6"
 uuid = "28b8d3ca-fb5f-59d9-8090-bfdbd6d07a71"
-version = "0.72.0"
+version = "0.72.2"
 
 [[deps.GR_jll]]
 deps = ["Artifacts", "Bzip2_jll", "Cairo_jll", "FFMPEG_jll", "Fontconfig_jll", "GLFW_jll", "JLLWrappers", "JpegTurbo_jll", "Libdl", "Libtiff_jll", "Pixman_jll", "Qt5Base_jll", "Zlib_jll", "libpng_jll"]
-git-tree-sha1 = "99e248f643b052a77d2766fe1a16fb32b661afd4"
+git-tree-sha1 = "47a2efe07729dd508a032e2f56c46c517481052a"
 uuid = "d2c73de3-f751-5644-a686-071e5b155ba9"
-version = "0.72.0+0"
+version = "0.72.2+0"
 
 [[deps.Gettext_jll]]
 deps = ["Artifacts", "CompilerSupportLibraries_jll", "JLLWrappers", "Libdl", "Libiconv_jll", "Pkg", "XML2_jll"]
@@ -314,10 +801,34 @@ git-tree-sha1 = "432b5b03176f8182bd6841fbfc42c718506a2d5f"
 uuid = "34004b35-14d8-5ef3-9330-4cdb6864b03a"
 version = "0.3.15"
 
+[[deps.Hyperscript]]
+deps = ["Test"]
+git-tree-sha1 = "8d511d5b81240fc8e6802386302675bdf47737b9"
+uuid = "47d2ed2b-36de-50cf-bf87-49c2cf4b8b91"
+version = "0.0.4"
+
+[[deps.HypertextLiteral]]
+deps = ["Tricks"]
+git-tree-sha1 = "c47c5fa4c5308f27ccaac35504858d8914e102f9"
+uuid = "ac1192a8-f4b3-4bfe-ba22-af5b92cd3ab2"
+version = "0.9.4"
+
+[[deps.IOCapture]]
+deps = ["Logging", "Random"]
+git-tree-sha1 = "f7be53659ab06ddc986428d3a9dcc95f6fa6705a"
+uuid = "b5f81e59-6552-4d32-b1f0-c071b021bf89"
+version = "0.2.2"
+
 [[deps.IniFile]]
 git-tree-sha1 = "f550e6e32074c939295eb5ea6de31849ac2c9625"
 uuid = "83e8ac13-25f8-5344-8a64-a9f2b223428f"
 version = "0.5.1"
+
+[[deps.InlineStrings]]
+deps = ["Parsers"]
+git-tree-sha1 = "9cc2baf75c6d09f9da536ddf58eb2f29dedaf461"
+uuid = "842dd82b-1e85-43dc-bf29-5d0ee9dffc48"
+version = "1.4.0"
 
 [[deps.InteractiveUtils]]
 deps = ["Markdown"]
@@ -329,10 +840,20 @@ git-tree-sha1 = "49510dfcb407e572524ba94aeae2fced1f3feb0f"
 uuid = "3587e190-3f89-42d0-90ee-14403ec27112"
 version = "0.1.8"
 
+[[deps.InvertedIndices]]
+git-tree-sha1 = "0dc7b50b8d436461be01300fd8cd45aa0274b038"
+uuid = "41ab1584-1d38-5bbf-9106-f11c6c58b48f"
+version = "1.3.0"
+
 [[deps.IrrationalConstants]]
 git-tree-sha1 = "630b497eafcc20001bba38a4651b327dcfc491d2"
 uuid = "92d709cd-6900-40b7-9082-c6be49f344b6"
 version = "0.2.2"
+
+[[deps.IteratorInterfaceExtensions]]
+git-tree-sha1 = "a3f24677c21f5bbe9d2a714f95dcd58337fb2856"
+uuid = "82899510-4779-5014-852e-03e436cf321d"
+version = "1.0.0"
 
 [[deps.JLFzf]]
 deps = ["Pipe", "REPL", "Random", "fzf_jll"]
@@ -383,9 +904,9 @@ version = "1.3.0"
 
 [[deps.Latexify]]
 deps = ["Formatting", "InteractiveUtils", "LaTeXStrings", "MacroTools", "Markdown", "OrderedCollections", "Printf", "Requires"]
-git-tree-sha1 = "2422f47b34d4b127720a18f86fa7b1aa2e141f29"
+git-tree-sha1 = "ee342fcc2b8762c43a60dfbbf73bc2258703af19"
 uuid = "23fbe1c1-3f47-55db-b15f-69d7ec21a316"
-version = "0.15.18"
+version = "0.15.19"
 
 [[deps.LibCURL]]
 deps = ["LibCURL_jll", "MozillaCACerts_jll"]
@@ -475,6 +996,11 @@ deps = ["Dates", "Logging"]
 git-tree-sha1 = "cedb76b37bc5a6c702ade66be44f831fa23c681e"
 uuid = "e6f89c97-d47a-5376-807f-9c37f3926c36"
 version = "1.0.0"
+
+[[deps.MIMEs]]
+git-tree-sha1 = "65f28ad4b594aebe22157d6fac869786a255b7eb"
+uuid = "6c6e2e6c-3030-632d-7369-2d6c69616d65"
+version = "0.1.4"
 
 [[deps.MacroTools]]
 deps = ["Markdown", "Random"]
@@ -621,11 +1147,29 @@ git-tree-sha1 = "5434b0ee344eaf2854de251f326df8720f6a7b55"
 uuid = "91a5bcdd-55d7-5caf-9e0b-520d859cae80"
 version = "1.38.10"
 
+[[deps.PlutoUI]]
+deps = ["AbstractPlutoDingetjes", "Base64", "ColorTypes", "Dates", "FixedPointNumbers", "Hyperscript", "HypertextLiteral", "IOCapture", "InteractiveUtils", "JSON", "Logging", "MIMEs", "Markdown", "Random", "Reexport", "URIs", "UUIDs"]
+git-tree-sha1 = "5bb5129fdd62a2bbbe17c2756932259acf467386"
+uuid = "7f904dfe-b85e-4ff6-b463-dae2292396a8"
+version = "0.7.50"
+
+[[deps.PooledArrays]]
+deps = ["DataAPI", "Future"]
+git-tree-sha1 = "a6062fe4063cdafe78f4a0a81cfffb89721b30e7"
+uuid = "2dfb63ee-cc39-5dd5-95bd-886bf059d720"
+version = "1.4.2"
+
 [[deps.Preferences]]
 deps = ["TOML"]
 git-tree-sha1 = "47e5f437cc0e7ef2ce8406ce1e7e24d44915f88d"
 uuid = "21216c6a-2e73-6563-6e65-726566657250"
 version = "1.3.0"
+
+[[deps.PrettyTables]]
+deps = ["Crayons", "Formatting", "LaTeXStrings", "Markdown", "Reexport", "StringManipulation", "Tables"]
+git-tree-sha1 = "548793c7859e28ef026dba514752275ee871169f"
+uuid = "08abe8d2-0d0c-5749-adfa-8a2ac140af0d"
+version = "2.2.3"
 
 [[deps.Printf]]
 deps = ["Unicode"]
@@ -702,6 +1246,12 @@ git-tree-sha1 = "30449ee12237627992a99d5e30ae63e4d78cd24a"
 uuid = "6c6a2e73-6563-6170-7368-637461726353"
 version = "1.2.0"
 
+[[deps.SentinelArrays]]
+deps = ["Dates", "Random"]
+git-tree-sha1 = "77d3c4726515dca71f6d80fbb5e251088defe305"
+uuid = "91c51154-3ec4-41a3-a24f-3f23e20d615c"
+version = "1.3.18"
+
 [[deps.Serialization]]
 uuid = "9e88b42a-f829-5b0c-bbe9-9e923198166b"
 
@@ -763,6 +1313,11 @@ git-tree-sha1 = "f625d686d5a88bcd2b15cd81f18f98186fdc0c9a"
 uuid = "4c63d2b9-4356-54db-8cca-17b64c39e42c"
 version = "1.3.0"
 
+[[deps.StringManipulation]]
+git-tree-sha1 = "46da2434b41f41ac3594ee9816ce5541c6096123"
+uuid = "892a3eda-7b42-436c-8928-eab12a02cf0e"
+version = "0.3.0"
+
 [[deps.SuiteSparse]]
 deps = ["Libdl", "LinearAlgebra", "Serialization", "SparseArrays"]
 uuid = "4607b0f0-06f3-5cda-b6b1-a6196a1729e9"
@@ -771,6 +1326,18 @@ uuid = "4607b0f0-06f3-5cda-b6b1-a6196a1729e9"
 deps = ["Dates"]
 uuid = "fa267f1f-6049-4f14-aa54-33bafae1ed76"
 version = "1.0.0"
+
+[[deps.TableTraits]]
+deps = ["IteratorInterfaceExtensions"]
+git-tree-sha1 = "c06b2f539df1c6efa794486abfb6ed2022561a39"
+uuid = "3783bdb8-4a98-5b6b-af9a-565f29a5fe9c"
+version = "1.0.1"
+
+[[deps.Tables]]
+deps = ["DataAPI", "DataValueInterfaces", "IteratorInterfaceExtensions", "LinearAlgebra", "OrderedCollections", "TableTraits", "Test"]
+git-tree-sha1 = "1544b926975372da01227b382066ab70e574a3ec"
+uuid = "bd369af6-aec1-5ad0-b16a-f7cc5008161c"
+version = "1.10.1"
 
 [[deps.Tar]]
 deps = ["ArgTools", "SHA"]
@@ -792,6 +1359,11 @@ deps = ["Random", "Test"]
 git-tree-sha1 = "0b829474fed270a4b0ab07117dce9b9a2fa7581a"
 uuid = "3bb67fe8-82b1-5028-8e26-92a6c54297fa"
 version = "0.9.12"
+
+[[deps.Tricks]]
+git-tree-sha1 = "aadb748be58b492045b4f56166b5188aa63ce549"
+uuid = "410a4b4d-49e4-4fbc-ab6d-cb71b17b3775"
+version = "0.1.7"
 
 [[deps.URIs]]
 git-tree-sha1 = "074f993b0ca030848b897beff716d93aca60f06a"
@@ -1048,9 +1620,49 @@ version = "1.4.1+0"
 """
 
 # ╔═╡ Cell order:
+# ╟─60a7b9b1-4419-414a-bc24-7281ff9188ce
 # ╟─9607249e-6e65-4c4b-8d3f-00a1767eeb81
 # ╠═8b31063c-2246-11ec-03b9-61538108208f
-# ╠═8fefd34b-9d41-40d5-8ff1-2357eddef898
-# ╠═3a18cc87-1508-483e-9c2d-fa579e7edab4
+# ╟─5b95cf0b-8fdf-433b-827f-ff2400757638
+# ╠═5f7b5c8a-c709-4554-91f9-179ede6a6981
+# ╟─eee9dfa8-53b7-4a4f-ad41-8454746e186c
+# ╠═1ec70f36-c5c4-4212-8682-e285e78f80ef
+# ╟─48669202-0a14-422f-99a1-ecce34a3879f
+# ╠═09fb1ee3-3b36-40b0-a9d9-b2964fbf0859
+# ╟─ec09f9b2-ead7-48ae-bae7-fa064890360a
+# ╟─e6aeeab1-3728-455b-925e-0e44d38ca6a6
+# ╠═07b5d3a7-4d5d-4e8e-9dac-98448b62ff18
+# ╟─93163bf6-6ffb-40c9-a9f9-926a817a4a21
+# ╠═91a1078c-d109-4b46-a54f-3d53c1ce1aae
+# ╟─8553d086-96b0-4470-8fef-c24c228c99fd
+# ╟─f63446f2-eb14-4e0d-8548-b52539ac2977
+# ╟─793c418d-f15e-4b45-af92-22aab447ae55
+# ╠═9a9fef63-8ba1-4875-9faa-73358c10a68d
+# ╟─79e7a3af-4ed2-4f9b-a451-3ccecf13702b
+# ╠═4cb1b67c-3efa-4d25-8e4c-2726b0bd7d51
+# ╟─f67be6fd-67b5-4fe0-bb42-535437483924
+# ╠═28386cde-f0e6-4c75-a11f-64ac360a1fcc
+# ╟─ee0ffd84-0605-48d7-a0e7-abc9b1036466
+# ╠═ff35f1bd-2bdf-4fe6-8837-81f70c5e6aeb
+# ╠═75d78093-cfac-47e1-ab82-1fd492aa10cb
+# ╠═a0bb3dc0-293c-4e0e-9f93-88cf82413e69
+# ╟─e79566b3-4bd9-4dfd-8942-69483002b628
+# ╟─95c62152-5534-42dd-952b-0822feab0ba3
+# ╠═3bec43c5-a4e4-44ca-825e-aa6d0158a4f0
+# ╠═ed22dcb7-582d-44dc-9e58-fd40dc1ab8ab
+# ╟─49f32f5a-3369-4ef3-9f6d-650f028f8f9c
+# ╠═5709429e-244e-4829-82a6-b315b8b0cece
+# ╠═2c288f45-b6b9-4c10-ab89-93decf3873c7
+# ╟─f16addfc-bee1-453c-b126-53c05e88ac64
+# ╠═2f6feba4-cf22-4b4c-b91a-7ddb079910e4
+# ╠═1e9e53a2-b4e9-45e3-b1fc-5a786390b189
+# ╟─9419695c-7205-4544-a3bc-b8b0b1b6fae9
+# ╟─5a5808e8-3c38-4134-ae6f-b99e941a697a
+# ╠═b9adf600-2c87-4f2d-a5e6-a6d2ffb73917
+# ╠═2330e6ea-cecd-4db7-a228-559e7eaa51ef
+# ╠═dcd5e737-fff4-4a54-a76d-12bd156476ef
+# ╠═a778b136-82f6-40d0-b605-c43806129a48
+# ╟─0e89e6f8-3f6f-4bd5-82fd-68e5cac39444
+# ╠═e196b449-5f3a-4d7c-929f-8acca3c26ae8
 # ╟─00000000-0000-0000-0000-000000000001
 # ╟─00000000-0000-0000-0000-000000000002
