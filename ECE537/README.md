@@ -7,9 +7,9 @@ It has contained five labs`1-5`, while `Julia` is a new language for me, so I ad
 The framework of the labs are:
 
 - [x] `lab0`: basic introduction to `Julia` and `Pluto`
-- [ ] `lab1`: `Univariate Random varables` and `Independence of Discrete random variables`
+- [x] `lab1`: `Univariate Random varables` and `Independence of Discrete random variables`
 - [ ] `lab2`: `Bivariate Gaussian Distributions` and `empirical verificaiton of the Law of Large Numbers and Central limit Theorem`
-- [ ] `lab3`: `Random Walk Process`  and `Poisson Random process`
+- [x] `lab3`: `Random Walk Process`  and `pure Poisson Random process`
 - [ ] `lab4`: `Generate Low-pass random process` and `Power Spectral density`
 - [ ] `lab5`: `autoregressive filter` and `coefficient estimation`
 
