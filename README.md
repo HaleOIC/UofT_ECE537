@@ -1,23 +1,19 @@
-## Advanced probability
+## README
 
-- `stochastic process`
-- `information theory`
+This folder has contained a lab which comes from the `ECE537`, acutally I do not know his school and course resources, but his `Pluto` elegent UI attracts me a lot, and its labs' handout is very skillful. Due to the poor inner-class resources, so I wanna do it for better undestanding.
 
-**tips: If you wanna some resources in the HUST like labs or projects, check `./HUST-xxx` for more details.**
+It has contained five labs`1-5`, while `Julia` is a new language for me, so I add a `Lab0` into the folder which contains some basic programmas in `Julia`.
 
-This folder has contained some files about the topic `advanced probability` , which is a very important part in the EE and CS. It will provide you a better understanding of the whole world like communication networks, control systems or machine learning.
+The framework of the labs are:
 
-It contains:
+- [x] `lab0`: basic introduction to `Julia` and `Pluto`
+- [x] `lab1`: `Univariate Random varables` and `Independence of Discrete random variables`
+- [ ] `lab2`: `Bivariate Gaussian Distributions` and `empirical verificaiton of the Law of Large Numbers and Central limit Theorem`
+- [x] `lab3`: `Random Walk Process`  and `pure Poisson Random process`
+- [ ] `lab4`: `Generate Low-pass random process` and `Power Spectral density`
+- [ ] `lab5`: `autoregressive filter` and `coefficient estimation`
 
-- `UCB EECS 126`: a total introduction to probability and random process
-- `ECE537`: an interesting part for random process, which written in Julia
-- `MIT 6.050J`: an introduction to information theory for freshman in MIT
-- `HUST information theory`: HUST's formal information theory
-- `HUST stochastic process`: HUST's random process
+when using the `Pluto` as notebook, I find it is really interestring and interactive, you can learn a lot when you install `Pluto` and check the `Getting started`.
 
-
-
-
-
-
+If you want to have a clone, please check this [web site](https://github.com/pranshumalik14/ece537-labs)
 
